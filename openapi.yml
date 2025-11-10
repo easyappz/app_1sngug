@@ -21,6 +21,145 @@ paths:
               schema:
                 $ref: '#/components/schemas/Message'
           description: ''
+  /api/auth/register/:
+    post:
+      operationId: api_auth_register_create
+      description: Register a new user
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+          description: 'User registered successfully'
+        '400':
+          description: 'Validation error'
+  /api/auth/login/:
+    post:
+      operationId: api_auth_login_create
+      description: Login user
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+          description: 'Login successful'
+        '401':
+          description: 'Invalid credentials'
+  /api/auth/logout/:
+    post:
+      operationId: api_auth_logout_create
+      description: Logout user
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh:
+                  type: string
+      responses:
+        '205':
+          description: 'Logout successful'
+  /api/auth/profile/:
+    get:
+      operationId: api_auth_profile_retrieve
+      description: Get user profile
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '401':
+          description: 'Unauthorized'
+    put:
+      operationId: api_auth_profile_update
+      description: Update user profile
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: 'Profile updated successfully'
+        '400':
+          description: 'Validation error'
+        '401':
+          description: 'Unauthorized'
+    patch:
+      operationId: api_auth_profile_partial_update
+      description: Partially update user profile
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: 'Profile updated successfully'
+        '400':
+          description: 'Validation error'
+        '401':
+          description: 'Unauthorized'
 components:
   schemas:
     Message:
@@ -36,6 +175,64 @@ components:
       required:
       - message
       - timestamp
+    UserRegistration:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - first_name
+      - last_name
+      - password
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+      required:
+      - id
+      - email
+      - first_name
+      - last_name
+    UserUpdate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
   securitySchemes:
     basicAuth:
       type: http
@@ -44,3 +241,7 @@ components:
       type: apiKey
       in: cookie
       name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
